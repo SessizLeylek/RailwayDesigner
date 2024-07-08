@@ -2,7 +2,7 @@
 Railway designing game made with odin
  
 Remaking the unfinished unity project in odin to:
-- Getting used to procedural languages
+- Getting used to procedural programming
 - Learning about OpenGL and glsl
 - I can't help myself from starting a new project before finishing the previous one.
 
