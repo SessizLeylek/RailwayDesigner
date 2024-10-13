@@ -55,10 +55,11 @@ import "core:fmt"
         mesh : rl.Mesh,
     }
 
-    // Creates and returns a curved track; manually alocates memory for the track
+    // Creates and returns a curved track; manually allocates memory for the track
     Track_CreateFromArc :: proc(arc : Arc, position : rl.Vector3) -> ^CurvedTrack
     {
         newTrack := new(CurvedTrack)
+        append(&tracks_curved, newTrack)
 
         rectCount := max(1, i32(Arc_Length(arc)))
         fmt.println(rectCount)
@@ -140,6 +141,10 @@ import "core:fmt"
         return newTrack
     }
 
+    CurvedTrack_Remove :: proc(track : ^CurvedTrack)
+    {
+        
+    }
 
     // Updates the transform matrix of a model to make it look at given direction;
     // forward and up are normalized vectors
@@ -168,7 +173,7 @@ import "core:fmt"
     camera_speed :: 8
 
     // Game Entities
-
+    tracks_curved : [dynamic]^CurvedTrack
 
 main :: proc()
 {
@@ -182,10 +187,24 @@ main :: proc()
 
     //> Object Setup
 
+    font := rl.LoadFontEx("res/cabin.ttf", 128, nil, 591)
+
+    test_shader := rl.LoadShader("res/test_shader.vsh", "res/test_shader.fsh")
+    test_material : rl.Material
+    test_material.shader = test_shader
+    test_material.maps = make([^]rl.MaterialMap, 1)
+    test_material.maps[0].texture = rl.LoadTexture("res/rail.png")
+
+    def_material := rl.LoadMaterialDefault()
+    def_material.maps[0].texture = rl.LoadTexture("res/rail.png")
+
     testModel := rl.LoadModel("res/duck.glb")
     secondModel := rl.LoadModel("res/pointer.glb")
 
-    ourTrack := Track_CreateFromArc({60, {0, 0, 5}, {0, 1, 0}}, {-10, 0, 10})
+    Track_CreateFromArc({90, {0, 0, 5}, {0, 1, 0}}, {-10, 0, 10})
+    Track_CreateFromArc({45, {8, 0, 0}, {0, 1, 0}}, {-5, 0, 10})
+    Track_CreateFromArc({-45, {0, 0, 8}, {0, 1, 0}}, {-5, 0, 5})
+    Track_CreateFromArc({180, {0, 0, 5}, {0, 1, 0}}, {-10, 0, 10})
 
     for !rl.WindowShouldClose()
     {   
@@ -222,7 +241,10 @@ main :: proc()
             rl.DrawModel(testModel, {8, 0, 0}, 1, rl.WHITE)
             rl.DrawModel(secondModel, {15, 0, -10}, 1, rl.BLUE)
 
-            rl.DrawMesh(ourTrack.mesh, rl.LoadMaterialDefault(), IDENTITY_MATRIX)
+            for tr in tracks_curved
+            {
+                rl.DrawMesh(tr.mesh, def_material, IDENTITY_MATRIX)
+            }
 
             rl.DrawSphere(camera.target, 0.2, rl.BLACK)
             rl.DrawGrid(100, 1)
@@ -233,6 +255,7 @@ main :: proc()
         when true 
         {
             rl.DrawFPS(10, 10)
+            rl.DrawTextEx(font, "Ğ", {100, 100}, 100, 32, rl.RED)
             
             // Draw Axis Arrows
             axisArrowX_x := rl.Vector3DotProduct({1, 0, 0}, cameraRightVector)
